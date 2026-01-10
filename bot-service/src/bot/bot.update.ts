@@ -74,7 +74,6 @@ export class BotUpdate {
       const text = message.text;
       this.logger.debug(`Text message: ${text}`);
 
-      // Проверяем наличие ссылки на канал
       const channelLinkMatch = text.match(/https?:\/\/t\.me\/([a-zA-Z0-9_]+)/);
 
       if (channelLinkMatch) {
