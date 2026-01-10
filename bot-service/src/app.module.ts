@@ -4,6 +4,9 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { BotModule } from './bot/bot.module';
+import { UserModule } from './user/user.module';
+import { ChannelModule } from './channel/channel.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -56,6 +59,9 @@ import { BotModule } from './bot/bot.module';
       inject: [ConfigService],
     }),
     BotModule,
+    UserModule,
+    ChannelModule,
+    SubscriptionModule,
   ],
 })
 export class AppModule {}
