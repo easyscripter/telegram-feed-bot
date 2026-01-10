@@ -75,6 +75,13 @@ export class SubscriptionService {
     return true;
   }
 
+  async getUserSubscriptions(userId: string): Promise<Subscription[]> {
+    return this.subscriptionRepository.find({
+      where: { user: { id: userId } },
+      relations: ['channel'],
+    });
+  }
+
   async getSubscribersByChannel(channelId: string): Promise<User[]> {
     const subscriptions = await this.subscriptionRepository.find({
       where: { channel: { id: channelId } },
