@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Subscription } from './entities/subscription.entity';
 import { Repository } from 'typeorm';
@@ -73,6 +78,13 @@ export class SubscriptionService {
     await this.subscriptionRepository.remove(subscription);
     this.logger.log(`Unsubscribed user ${userId} from channel ${channelId}`);
     return true;
+  }
+
+  async getUserSubscriptions(userId: string): Promise<Subscription[]> {
+    return this.subscriptionRepository.find({
+      where: { user: { id: userId } },
+      relations: ['channel'],
+    });
   }
 
   async getSubscribersByChannel(channelId: string): Promise<User[]> {

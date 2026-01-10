@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Message as TelegramMessage } from '@telegraf/types';
-import { Start, Help, Update, Ctx, On } from 'nestjs-telegraf';
+import {
+  InlineKeyboardMarkup,
+  Message as TelegramMessage,
+} from '@telegraf/types';
+import { Start, Help, Update, Ctx, On, Command } from 'nestjs-telegraf';
 import { ChannelService } from 'src/channel/channel.service';
 import { SubscriptionService } from 'src/subscription/subscription.service';
 import { UserService } from 'src/user/user.service';
@@ -50,7 +53,6 @@ export class BotUpdate {
       '📖 Доступные команды:\n\n' +
         '/start - Начать работу\n' +
         '/list - Список ваших каналов\n' +
-        '/settings - Настройки\n' +
         '/help - Эта справка',
     );
   }
@@ -206,6 +208,49 @@ export class BotUpdate {
           '❌ Произошла ошибка при добавлении канала. Попробуй еще раз.',
         );
       }
+    }
+  }
+
+  @Command('list')
+  async onList(@Ctx() ctx: Context) {
+    const telegramId = ctx.from.id.toString();
+
+    try {
+      const user = await this.userService.findByTelegramId(telegramId);
+      if (!user) {
+        await ctx.reply('❌ Пользователь не найден. Попробуй /start');
+        return;
+      }
+
+      const subscriptions = await this.subscriptionService.getUserSubscriptions(
+        user.id,
+      );
+
+      if (!subscriptions.length) {
+        await ctx.reply(
+          '📭 У тебя пока нет каналов в ленте.\n\n' +
+            'Перешли мне пост из канала или отправь ссылку на канал чтобы добавить его.',
+        );
+        return;
+      }
+
+      const keyboard: InlineKeyboardMarkup = {
+        inline_keyboard: subscriptions.map((sub) => [
+          {
+            text: sub.channel.title,
+            callback_data: `channel_select:${sub.channel.id}`,
+          },
+        ]),
+      };
+
+      await ctx.reply(
+        `📋 Твои каналы (${subscriptions.length}/50):\n\n` +
+          'Выбери канал для управления:',
+        { reply_markup: keyboard },
+      );
+    } catch (error) {
+      this.logger.error('Error showing channel list:', error);
+      await ctx.reply('❌ Произошла ошибка при загрузке списка каналов.');
     }
   }
 }
