@@ -56,4 +56,11 @@ export class ChannelService {
     });
     return channel?.subscriptions?.length || 0;
   }
+
+  async findById(channelId: string): Promise<Channel | null> {
+    return this.channelRepository.findOne({
+      where: { id: channelId },
+      relations: ['subscriptions'],
+    });
+  }
 }
